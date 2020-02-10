@@ -1,22 +1,28 @@
 const express = require('express');
-const mysql = require('mysql');
+const conn = require('./config/db');
 const app = express();
 
 app.use(express.json());
 
-// config for your database
-const conn = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'root',
-    database: 'test'
+conn.connect(function(err) {
+    if (err) {
+      return console.error('error: ' + err.message);
+    }
+   
+    let createTodos = `create table if not exists todos(
+                            id int primary key auto_increment,
+                            title varchar(255) not null,
+                            completed tinyint(1) not null default 0
+                        )`;
+   
+    conn.query(createTodos, function(err, results, fields) {
+      if (err) {
+        console.log(err.message);
+      } 
+    });
   });
 
-//connect to database
-conn.connect((err) =>{
-    if(err) throw err;
-    console.log('Mysql Connected...');
-});
+app.use('/api',require('./api/data'));
 
 const PORT = process.env.PRODUCTION || 5000;
 
